@@ -1,50 +1,65 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text.Json;
 using MCAddonErsteller.Models;
 
-namespace MCAddonErsteller.Services
+namespace MCAddonErsteller.Services;
+
+public static class UpdateChecker
 {
-  public static class UpdateChecker
+  private const string LatestReleaseUrl = "https://api.github.com/repos/xoxttxox/MC-Addon-Ersteller/releases/latest";
+  private const string ReleasesPageUrl = "https://github.com/xoxttxox/MC-Addon-Ersteller/releases/latest";
+
+  public static async Task<UpdateResult> CheckForUpdateAsync()
   {
-    private const string CurrentVersion = "1.0.1";
-    private const string LatestReleaseUrl = "https://api.github.com/repos/xoxttxox/MC-Addon-Ersteller/releases/latest";
-    private const string ReleasesPageUrl = "https://github.com/xoxttxox/MC-Addon-Ersteller/releases/latest";
+    string currentVersionText = GetCurrentVersion();
 
-    public static async Task<UpdateResult> CheckForUpdateAsync()
+    using HttpClient client = new();
+
+    client.DefaultRequestHeaders.UserAgent.Add(
+      new ProductInfoHeaderValue("MCAddonErsteller", currentVersionText)
+    );
+
+    using HttpResponseMessage response = await client.GetAsync(LatestReleaseUrl);
+    response.EnsureSuccessStatusCode();
+
+    await using Stream stream = await response.Content.ReadAsStreamAsync();
+    using JsonDocument doc = await JsonDocument.ParseAsync(stream);
+
+    string tagName = doc.RootElement.GetProperty("tag_name").GetString() ?? "";
+    string latestVersionText = tagName.TrimStart('v', 'V');
+
+    if (!Version.TryParse(currentVersionText, out Version? current))
+      current = new Version(1, 0, 0);
+
+    if (!Version.TryParse(latestVersionText, out Version? latest))
+      latest = current;
+
+    return new UpdateResult
     {
-      using var client = new HttpClient();
+      CurrentVersion = current.ToString(),
+      LatestVersion = latest.ToString(),
+      IsUpdateAvailable = latest > current,
+      ReleaseUrl = ReleasesPageUrl
+    };
+  }
 
-      client.DefaultRequestHeaders.UserAgent.Add(
-          new ProductInfoHeaderValue("MCAddonErsteller", CurrentVersion)
-      );
-
-      var json = await client.GetStringAsync(LatestReleaseUrl);
-
-      using var doc = JsonDocument.Parse(json);
-
-      string tagName = doc.RootElement.GetProperty("tag_name").GetString() ?? "";
-      string latestVersionText = tagName.TrimStart('v', 'V');
-
-      Version current = new(CurrentVersion);
-      Version latest = new(latestVersionText);
-
-      return new UpdateResult
-      {
-        CurrentVersion = current.ToString(),
-        LatestVersion = latest.ToString(),
-        IsUpdateAvailable = latest > current,
-        ReleaseUrl = ReleasesPageUrl
-      };
-    }
-
-    public static void OpenReleasePage()
+  public static void OpenReleasePage()
+  {
+    Process.Start(new ProcessStartInfo
     {
-      Process.Start(new ProcessStartInfo
-      {
-        FileName = ReleasesPageUrl,
-        UseShellExecute = true
-      });
-    }
+      FileName = ReleasesPageUrl,
+      UseShellExecute = true
+    });
+  }
+
+  private static string GetCurrentVersion()
+  {
+    return Assembly
+      .GetExecutingAssembly()
+      .GetName()
+      .Version?
+      .ToString(3) ?? "1.0.1";
   }
 }

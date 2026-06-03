@@ -1,10 +1,9 @@
-﻿namespace MCAddonErsteller.Models
+﻿namespace MCAddonErsteller.Models;
+
+public sealed class UpdateResult
 {
-  public sealed class UpdateResult
-  {
-    public string CurrentVersion { get; set; } = "";
-    public string LatestVersion { get; set; } = "";
-    public bool IsUpdateAvailable { get; set; }
-    public string ReleaseUrl { get; set; } = "";
-  }
+  public string CurrentVersion { get; init; } = string.Empty;
+  public string LatestVersion { get; init; } = string.Empty;
+  public bool IsUpdateAvailable { get; init; }
+  public string ReleaseUrl { get; init; } = string.Empty;
 }

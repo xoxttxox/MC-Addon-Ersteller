@@ -5,6 +5,15 @@ namespace MCAddonErsteller.Services;
 
 public static class PackResolver
 {
+  private static readonly string[] IgnoredDirectoryNames =
+  [
+    "__MACOSX",
+    ".git",
+    ".github",
+    "bin",
+    "obj"
+  ];
+
   public static ResolvedPack Resolve(string sourcePath, string role)
   {
     if (string.IsNullOrWhiteSpace(sourcePath))
@@ -30,6 +39,7 @@ public static class PackResolver
   private static ResolvedPack ResolveZipLikeFile(string sourcePath, string role)
   {
     string extension = Path.GetExtension(sourcePath).ToLowerInvariant();
+
     if (extension is not ".zip" and not ".mcpack" and not ".mcaddon")
       throw new InvalidOperationException($"{role}: Nur .zip, .mcpack, .mcaddon oder Ordner werden unterstützt.");
 
@@ -39,7 +49,12 @@ public static class PackResolver
     try
     {
       ZipFile.ExtractToDirectory(sourcePath, tempRoot, overwriteFiles: true);
-      return ResolveDirectory(tempRoot, role, tempRoot, sourcePath);
+      return ResolveDirectory(tempRoot, role, temporaryDirectory: tempRoot, originalSourceFile: sourcePath);
+    }
+    catch (InvalidDataException ex)
+    {
+      TryDeleteDirectory(tempRoot);
+      throw new InvalidOperationException($"{role}: Die Datei ist kein gültiges ZIP/MCPACK/MCADDON Archiv.", ex);
     }
     catch
     {
@@ -56,6 +71,7 @@ public static class PackResolver
     ManifestInfo manifest = ManifestReader.Read(manifestPath);
 
     string folderName = Path.GetFileName(rootDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+
     if (string.IsNullOrWhiteSpace(folderName) && originalSourceFile is not null)
       folderName = Path.GetFileNameWithoutExtension(originalSourceFile);
 
@@ -74,27 +90,50 @@ public static class PackResolver
   private static string FindManifest(string directory)
   {
     string rootManifest = Path.Combine(directory, "manifest.json");
+
     if (File.Exists(rootManifest))
       return rootManifest;
 
-    string[] directChildManifests = Directory.GetDirectories(directory)
-        .Select(path => Path.Combine(path, "manifest.json"))
-        .Where(File.Exists)
-        .ToArray();
+    string[] directChildManifests =
+    [
+      .. Directory.GetDirectories(directory)
+      .Select(path => Path.Combine(path, "manifest.json"))
+      .Where(File.Exists)
+      .Where(path => !IsIgnoredPath(path))
+    ];
 
     if (directChildManifests.Length == 1)
       return directChildManifests[0];
 
-    string[] allManifests = Directory.EnumerateFiles(directory, "manifest.json", SearchOption.AllDirectories)
-        .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}__MACOSX{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-        .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-        .OrderBy(path => path.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar))
-        .ToArray();
+    string[] allManifests =
+    [
+      .. Directory
+      .EnumerateFiles(directory, "manifest.json", SearchOption.AllDirectories)
+      .Where(path => !IsIgnoredPath(path))
+      .OrderBy(GetDirectoryDepth)
+    ];
 
     if (allManifests.Length == 0)
       throw new InvalidOperationException("Keine manifest.json gefunden. Bitte den richtigen BP/RP Ordner oder eine passende ZIP auswählen.");
 
     return allManifests[0];
+  }
+
+  private static bool IsIgnoredPath(string path)
+  {
+    string fullPath = Path.GetFullPath(path);
+
+    string[] parts = fullPath.Split(
+      [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+      StringSplitOptions.RemoveEmptyEntries
+    );
+
+    return parts.Any(part => IgnoredDirectoryNames.Contains(part, StringComparer.OrdinalIgnoreCase));
+  }
+
+  private static int GetDirectoryDepth(string path)
+  {
+    return Path.GetFullPath(path).Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar);
   }
 
   private static void TryDeleteDirectory(string directory)
@@ -106,7 +145,7 @@ public static class PackResolver
     }
     catch
     {
-      // Temp cleanup must never hide the original error.
+      // Temp cleanup darf nie den eigentlichen Fehler verstecken.
     }
   }
 }

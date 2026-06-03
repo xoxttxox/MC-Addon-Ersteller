@@ -3,9 +3,9 @@ using MCAddonErsteller.Models;
 
 namespace MCAddonErsteller.Services;
 
-public sealed class McAddonBuilder
+public static class McAddonBuilder
 {
-  public Task<string> BuildAsync(BuildOptions options, CancellationToken cancellationToken = default)
+  public static Task<string> BuildAsync(BuildOptions options, CancellationToken cancellationToken = default)
   {
     return Task.Run(() => Build(options, cancellationToken), cancellationToken);
   }
@@ -14,8 +14,8 @@ public sealed class McAddonBuilder
   {
     ValidateOptions(options);
 
-    List<ResolvedPack> packs = new();
-    List<string> tempDirectories = new();
+    List<ResolvedPack> packs = [];
+    List<string> tempDirectories = [];
 
     try
     {
@@ -29,8 +29,10 @@ public sealed class McAddonBuilder
       {
         Report(options, 8, "Lese Behavior Pack ...");
         options.Log?.Invoke("Lese BP manifest.json ...");
+
         ResolvedPack bp = PackResolver.Resolve(options.BehaviorPackPath!, "BP");
         packs.Add(bp);
+
         if (bp.TemporaryDirectory is not null)
           tempDirectories.Add(bp.TemporaryDirectory);
 
@@ -43,8 +45,10 @@ public sealed class McAddonBuilder
       {
         Report(options, 16, "Lese Resource Pack ...");
         options.Log?.Invoke("Lese RP manifest.json ...");
+
         ResolvedPack rp = PackResolver.Resolve(options.ResourcePackPath!, "RP");
         packs.Add(rp);
+
         if (rp.TemporaryDirectory is not null)
           tempDirectories.Add(rp.TemporaryDirectory);
 
@@ -70,9 +74,11 @@ public sealed class McAddonBuilder
       StepDelay(options, cancellationToken);
 
       Report(options, 30, "Zähle Dateien ...");
-      List<PackFileList> packFileLists = packs
-          .Select(pack => new PackFileList(pack, EnumeratePackFiles(pack.RootDirectory).ToList()))
-          .ToList();
+
+      List<PackFileList> packFileLists =
+      [
+        .. packs.Select(pack => new PackFileList(pack, [.. EnumeratePackFiles(pack.RootDirectory)]))
+      ];
 
       int totalFiles = packFileLists.Sum(pack => pack.Files.Count);
       options.Log?.Invoke($"Dateien gefunden: {totalFiles}");
@@ -101,8 +107,8 @@ public sealed class McAddonBuilder
           cancellationToken.ThrowIfCancellationRequested();
 
           string relativePath = Path.GetRelativePath(pack.RootDirectory, filePath)
-              .Replace(Path.DirectorySeparatorChar, '/')
-              .Replace(Path.AltDirectorySeparatorChar, '/');
+            .Replace(Path.DirectorySeparatorChar, '/')
+            .Replace(Path.AltDirectorySeparatorChar, '/');
 
           string entryName = archiveFolderName + "/" + relativePath;
           archive.CreateEntryFromFile(filePath, entryName, CompressionLevel.Optimal);
@@ -124,6 +130,7 @@ public sealed class McAddonBuilder
 
       Report(options, 100, "Fertig.");
       options.Log?.Invoke("Fertig. MCADDON wurde erfolgreich erstellt.");
+
       return outputPath;
     }
     finally
@@ -165,29 +172,32 @@ public sealed class McAddonBuilder
 
   private static IEnumerable<string> EnumeratePackFiles(string rootDirectory)
   {
-    return Directory.EnumerateFiles(rootDirectory, "*", SearchOption.AllDirectories)
-        .Where(path => !IsIgnored(path))
-        .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
+    return Directory
+      .EnumerateFiles(rootDirectory, "*", SearchOption.AllDirectories)
+      .Where(path => !IsIgnored(path))
+      .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
   }
 
   private static bool IsIgnored(string filePath)
   {
     string normalized = filePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+
     string[] ignoredSegments =
-    {
-            $"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}",
-            $"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}",
-            $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
-            $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
-            $"{Path.DirectorySeparatorChar}__MACOSX{Path.DirectorySeparatorChar}",
-        };
+    [
+      $"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}",
+    $"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}",
+    $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
+    $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
+    $"{Path.DirectorySeparatorChar}__MACOSX{Path.DirectorySeparatorChar}",
+  ];
 
     if (ignoredSegments.Any(segment => normalized.Contains(segment, StringComparison.OrdinalIgnoreCase)))
       return true;
 
     string fileName = Path.GetFileName(filePath);
+
     return fileName.Equals("Thumbs.db", StringComparison.OrdinalIgnoreCase)
-           || fileName.Equals(".DS_Store", StringComparison.OrdinalIgnoreCase);
+      || fileName.Equals(".DS_Store", StringComparison.OrdinalIgnoreCase);
   }
 
   private static string GetUniqueFolderName(string folderName, HashSet<string> used)
@@ -197,11 +207,13 @@ public sealed class McAddonBuilder
 
     int index = 2;
     string candidate;
+
     do
     {
       candidate = folderName + "_" + index;
       index++;
-    } while (used.Contains(candidate));
+    }
+    while (used.Contains(candidate));
 
     return candidate;
   }
@@ -213,6 +225,7 @@ public sealed class McAddonBuilder
 
     const double start = 34;
     const double end = 94;
+
     double fileProgress = processedFiles / (double)totalFiles;
     return start + fileProgress * (end - start);
   }
@@ -240,6 +253,7 @@ public sealed class McAddonBuilder
   private static void StepDelay(BuildOptions options, CancellationToken cancellationToken)
   {
     int delay = Math.Clamp(options.StepDelayMilliseconds, 0, 1000);
+
     if (delay <= 0)
       return;
 

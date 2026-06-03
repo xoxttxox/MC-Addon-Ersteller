@@ -7,6 +7,12 @@ public static class ManifestReader
 {
   public static ManifestInfo Read(string manifestPath)
   {
+    if (string.IsNullOrWhiteSpace(manifestPath))
+      throw new ArgumentException("Manifest-Pfad darf nicht leer sein.", nameof(manifestPath));
+
+    if (!File.Exists(manifestPath))
+      throw new FileNotFoundException("Manifest-Datei wurde nicht gefunden.", manifestPath);
+
     using FileStream stream = File.OpenRead(manifestPath);
     using JsonDocument document = JsonDocument.Parse(stream, new JsonDocumentOptions
     {
@@ -15,7 +21,13 @@ public static class ManifestReader
     });
 
     JsonElement root = document.RootElement;
-    JsonElement header = root.TryGetProperty("header", out JsonElement h) ? h : root;
+
+    if (root.ValueKind != JsonValueKind.Object)
+      throw new InvalidDataException("manifest.json ist ungültig.");
+
+    JsonElement header = root.TryGetProperty("header", out JsonElement h) && h.ValueKind == JsonValueKind.Object
+      ? h
+      : root;
 
     return new ManifestInfo
     {
@@ -29,34 +41,43 @@ public static class ManifestReader
 
   private static string ReadString(JsonElement element, string propertyName, string fallback)
   {
-    if (element.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String)
-      return value.GetString() ?? fallback;
+    if (element.ValueKind != JsonValueKind.Object)
+      return fallback;
 
-    return fallback;
+    if (!element.TryGetProperty(propertyName, out JsonElement value))
+      return fallback;
+
+    return value.ValueKind == JsonValueKind.String
+      ? value.GetString() ?? fallback
+      : fallback;
   }
 
   private static string ReadVersion(JsonElement element, string propertyName, string fallback)
   {
+    if (element.ValueKind != JsonValueKind.Object)
+      return fallback;
+
     if (!element.TryGetProperty(propertyName, out JsonElement value))
       return fallback;
 
     if (value.ValueKind == JsonValueKind.Array)
     {
-      List<int> parts = new();
+      List<int> parts = [];
+
       foreach (JsonElement part in value.EnumerateArray())
       {
         if (part.ValueKind == JsonValueKind.Number && part.TryGetInt32(out int number))
-          parts.Add(number);
+          parts.Add(Math.Max(0, number));
       }
 
       if (parts.Count > 0)
-        return string.Join('.', parts);
+        return FileNameTools.NormalizeVersion(string.Join('.', parts));
     }
 
     if (value.ValueKind == JsonValueKind.String)
-      return value.GetString() ?? fallback;
+      return FileNameTools.NormalizeVersion(value.GetString());
 
-    return fallback;
+    return FileNameTools.NormalizeVersion(fallback);
   }
 
   private static string ReadKind(JsonElement root)
@@ -69,22 +90,28 @@ public static class ManifestReader
 
     foreach (JsonElement module in modules.EnumerateArray())
     {
+      if (module.ValueKind != JsonValueKind.Object)
+        continue;
+
       if (!module.TryGetProperty("type", out JsonElement typeElement) || typeElement.ValueKind != JsonValueKind.String)
         continue;
 
-      string? type = typeElement.GetString()?.ToLowerInvariant();
+      string? type = typeElement.GetString()?.Trim().ToLowerInvariant();
+
       if (type == "resources")
         hasResources = true;
-      if (type is "data" or "script")
+      else if (type is "data" or "script")
         hasDataOrScript = true;
     }
 
-    if (hasResources && !hasDataOrScript)
-      return "resource";
-    if (hasDataOrScript && !hasResources)
-      return "behavior";
-    if (hasDataOrScript && hasResources)
+    if (hasResources && hasDataOrScript)
       return "mixed";
+
+    if (hasResources)
+      return "resource";
+
+    if (hasDataOrScript)
+      return "behavior";
 
     return "unknown";
   }

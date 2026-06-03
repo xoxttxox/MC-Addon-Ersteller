@@ -1,7 +1,8 @@
 using System.ComponentModel;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Drawing.Drawing2D;
+using System.Reflection;
+using System.Windows.Forms;
 using MCAddonErsteller.Models;
 using MCAddonErsteller.Services;
 
@@ -28,6 +29,7 @@ public sealed class MainForm : Form
   private readonly TextBox _versionText = new();
   private readonly TextBox _outputPathText = new();
   private readonly TextBox _logText = new();
+  private readonly Label _fileNamePreviewLabel = new();
   private readonly ProgressBar _buildProgress = new();
   private readonly Label _buildProgressLabel = new();
   private readonly Button _buildButton = new();
@@ -51,6 +53,7 @@ public sealed class MainForm : Form
 
     ApplyAppIcon();
     BuildUi();
+    UpdateFileNamePreview();
     SetDefaults();
 
     Shown += MainForm_Shown;
@@ -67,7 +70,7 @@ public sealed class MainForm : Form
     {
       UpdateStatus("Prüfe Updates ...");
 
-      var update = await UpdateChecker.CheckForUpdateAsync();
+      UpdateResult update = await UpdateChecker.CheckForUpdateAsync();
 
       if (update.IsUpdateAvailable)
       {
@@ -82,9 +85,7 @@ public sealed class MainForm : Form
         );
 
         if (result == DialogResult.Yes)
-        {
           UpdateChecker.OpenReleasePage();
-        }
       }
       else
       {
@@ -97,15 +98,16 @@ public sealed class MainForm : Form
     }
   }
 
-
   private void ApplyAppIcon()
   {
     try
     {
       string? exePath = Application.ExecutablePath;
+
       if (!string.IsNullOrWhiteSpace(exePath))
       {
         using Icon? extractedIcon = Icon.ExtractAssociatedIcon(exePath);
+
         if (extractedIcon is not null)
           Icon = (Icon)extractedIcon.Clone();
       }
@@ -131,6 +133,8 @@ public sealed class MainForm : Form
 
     Panel outputCard = CreateCard("Ausgabe", "Name, Version und Speicherort der .mcaddon", new Point(18, 292), new Size(430, 218));
     BuildOutputArea(outputCard);
+    _packageNameText.TextChanged += (_, _) => UpdateFileNamePreview();
+    _versionText.TextChanged += (_, _) => UpdateFileNamePreview();
     Controls.Add(outputCard);
 
     Panel logCard = CreateCard("Build Log", "Hier siehst du, was der Launcher macht", new Point(472, 292), new Size(430, 218));
@@ -146,7 +150,7 @@ public sealed class MainForm : Form
     Controls.Add(_buildButton);
   }
 
-  private Control CreateHeader()
+  private GradientHeaderPanel CreateHeader()
   {
     GradientHeaderPanel header = new()
     {
@@ -191,6 +195,7 @@ public sealed class MainForm : Form
     header.Controls.Add(title);
     header.Controls.Add(subtitle);
     header.Controls.Add(tag);
+
     return header;
   }
 
@@ -207,8 +212,10 @@ public sealed class MainForm : Form
 
     _statusLabel.Text = "Bereit";
     _statusLabel.ForeColor = Color.FromArgb(228, 232, 240);
+
     _statusSpacer.Spring = true;
     _statusSpacer.Text = "";
+
     _statusProgress.Minimum = 0;
     _statusProgress.Maximum = 100;
     _statusProgress.Value = 0;
@@ -217,7 +224,7 @@ public sealed class MainForm : Form
 
     ToolStripStatusLabel versionLabel = new()
     {
-      Text = "v1.0.1",
+      Text = $"v{GetAppVersion()}",
       ForeColor = Color.FromArgb(150, 163, 184)
     };
 
@@ -225,10 +232,11 @@ public sealed class MainForm : Form
     statusStrip.Items.Add(_statusSpacer);
     statusStrip.Items.Add(_statusProgress);
     statusStrip.Items.Add(versionLabel);
+
     return statusStrip;
   }
 
-  private Panel CreateCard(string title, string subtitle, Point location, Size size)
+  private static BorderPanel CreateCard(string title, string subtitle, Point location, Size size)
   {
     BorderPanel card = new()
     {
@@ -259,6 +267,7 @@ public sealed class MainForm : Form
 
     card.Controls.Add(titleLabel);
     card.Controls.Add(subtitleLabel);
+
     return card;
   }
 
@@ -303,34 +312,35 @@ public sealed class MainForm : Form
   private void BuildOutputArea(Panel parent)
   {
     AddFieldLabel(parent, "Addon Name", new Point(16, 66));
+
     _packageNameText.Location = new Point(112, 63);
     _packageNameText.Size = new Size(292, 23);
     _packageNameText.PlaceholderText = "z.B. MeinAddon";
     parent.Controls.Add(_packageNameText);
 
     AddFieldLabel(parent, "Version", new Point(16, 100));
+
     _versionText.Location = new Point(112, 97);
     _versionText.Size = new Size(120, 23);
     _versionText.PlaceholderText = "1.0.0";
     parent.Controls.Add(_versionText);
 
-    Label hint = new()
-    {
-      Text = "Dateiname: Name_v1_0_0.mcaddon",
-      Location = new Point(242, 101),
-      Size = new Size(170, 20),
-      ForeColor = TextMuted,
-      Font = new Font("Segoe UI", 8.2F, FontStyle.Regular, GraphicsUnit.Point)
-    };
-    parent.Controls.Add(hint);
+    _fileNamePreviewLabel.Text = "Dateiname: MeinAddon_v1_0_0.mcaddon";
+    _fileNamePreviewLabel.Location = new Point(112, 123);
+    _fileNamePreviewLabel.Size = new Size(292, 20);
+    _fileNamePreviewLabel.ForeColor = TextMuted;
+    _fileNamePreviewLabel.Font = new Font("Segoe UI", 8.2F, FontStyle.Regular, GraphicsUnit.Point);
+    _fileNamePreviewLabel.AutoEllipsis = true;
+    parent.Controls.Add(_fileNamePreviewLabel);
 
-    AddFieldLabel(parent, "Ausgabe", new Point(16, 136));
-    _outputPathText.Location = new Point(112, 133);
+    AddFieldLabel(parent, "Ausgabe", new Point(16, 150));
+
+    _outputPathText.Location = new Point(112, 147);
     _outputPathText.Size = new Size(218, 23);
     _outputPathText.ReadOnly = true;
     parent.Controls.Add(_outputPathText);
 
-    Button outputButton = CreateSmallButton("Wählen", new Point(338, 131), new Size(66, 27));
+    Button outputButton = CreateSmallButton("Wählen", new Point(338, 145), new Size(66, 27));
     outputButton.Click += (_, _) => BrowseOutputFolder();
     parent.Controls.Add(outputButton);
 
@@ -342,6 +352,7 @@ public sealed class MainForm : Form
       ForeColor = Color.FromArgb(88, 115, 150),
       Font = new Font("Segoe UI Semibold", 8.4F, FontStyle.Regular, GraphicsUnit.Point)
     };
+
     parent.Controls.Add(bottomHint);
   }
 
@@ -374,7 +385,7 @@ public sealed class MainForm : Form
     parent.Controls.Add(_logText);
   }
 
-  private void AddFieldLabel(Control parent, string text, Point location)
+  private static void AddFieldLabel(Control parent, string text, Point location)
   {
     Label label = new()
     {
@@ -384,10 +395,11 @@ public sealed class MainForm : Form
       ForeColor = TextMuted,
       Font = new Font("Segoe UI Semibold", 8.8F, FontStyle.Bold, GraphicsUnit.Point)
     };
+
     parent.Controls.Add(label);
   }
 
-  private Button CreateSmallButton(string text, Point location, Size size)
+  private static Button CreateSmallButton(string text, Point location, Size size)
   {
     Button button = new()
     {
@@ -397,7 +409,9 @@ public sealed class MainForm : Form
       Font = new Font("Segoe UI Semibold", 8.4F, FontStyle.Bold, GraphicsUnit.Point),
       Cursor = Cursors.Hand
     };
+
     StyleSecondaryButton(button);
+
     return button;
   }
 
@@ -423,9 +437,25 @@ public sealed class MainForm : Form
   {
     _packageNameText.Text = "MeinAddon";
     _versionText.Text = "1.0.0";
+
     string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-    _outputPathText.Text = string.IsNullOrWhiteSpace(desktop) ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) : desktop;
+
+    _outputPathText.Text = string.IsNullOrWhiteSpace(desktop)
+      ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+      : desktop;
+
     Log("Bereit. Wähle BP/RP als Ordner oder ZIP aus.");
+  }
+
+  private void UpdateFileNamePreview()
+  {
+    if (_fileNamePreviewLabel.IsDisposed)
+      return;
+
+    string safeName = FileNameTools.ToSafeFileName(_packageNameText.Text, "MeinAddon");
+    string safeVersion = FileNameTools.VersionForFileName(_versionText.Text);
+
+    _fileNamePreviewLabel.Text = $"Dateiname: {safeName}_v{safeVersion}.mcaddon";
   }
 
   private void BrowseFolder(bool isBehaviorPack)
@@ -460,7 +490,9 @@ public sealed class MainForm : Form
     {
       Description = "Ausgabeordner auswählen",
       ShowNewFolderButton = true,
-      SelectedPath = Directory.Exists(_outputPathText.Text) ? _outputPathText.Text : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)
+      SelectedPath = Directory.Exists(_outputPathText.Text)
+        ? _outputPathText.Text
+        : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)
     };
 
     if (dialog.ShowDialog(this) == DialogResult.OK)
@@ -534,6 +566,7 @@ public sealed class MainForm : Form
 
       Log($"FEHLER {role}: {ex.Message}");
       UpdateStatus($"{role} Fehler.");
+
       MessageBox.Show(this, ex.Message, "Pack konnte nicht gelesen werden", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
     finally
@@ -567,15 +600,18 @@ public sealed class MainForm : Form
         Progress = new Progress<double>(SetBuildProgress)
       };
 
-      string outputPath = await new McAddonBuilder().BuildAsync(options);
+      string outputPath = await McAddonBuilder.BuildAsync(options);
+
       SetBuildProgress(100);
       UpdateStatus("Fertig.");
+
       MessageBox.Show(this, $"MCADDON wurde erstellt:\n\n{outputPath}", "Fertig", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
     catch (Exception ex)
     {
       UpdateStatus("Fehler.");
       Log("FEHLER: " + ex.Message);
+
       MessageBox.Show(this, ex.Message, "Build fehlgeschlagen", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
     finally
@@ -608,6 +644,7 @@ public sealed class MainForm : Form
     }
 
     int progress = Math.Clamp((int)Math.Round(value), 0, 100);
+
     _statusProgress.Value = progress;
     _buildProgress.Value = progress;
     _buildProgressLabel.Text = $"Fortschritt: {progress}%";
@@ -622,6 +659,15 @@ public sealed class MainForm : Form
     }
 
     _statusLabel.Text = text;
+  }
+
+  private static string GetAppVersion()
+  {
+    return Assembly
+      .GetExecutingAssembly()
+      .GetName()
+      .Version?
+      .ToString(3) ?? "1.0.1";
   }
 
   private sealed class DarkStatusRenderer : ToolStripProfessionalRenderer
@@ -679,6 +725,7 @@ public sealed class MainForm : Form
     protected override void OnPaint(PaintEventArgs e)
     {
       base.OnPaint(e);
+
       using Pen pen = new(BorderColor, BorderWidth);
       Rectangle rect = new(0, 0, Width - 1, Height - 1);
       e.Graphics.DrawRectangle(pen, rect);

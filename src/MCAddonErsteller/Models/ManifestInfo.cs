@@ -1,11 +1,10 @@
-namespace MCAddonErsteller.Models
+namespace MCAddonErsteller.Models;
+
+public sealed class ManifestInfo
 {
-  public sealed class ManifestInfo
-  {
-    public string Name { get; init; } = "Unbekannt";
-    public string Description { get; init; } = string.Empty;
-    public string Version { get; init; } = "1.0.0";
-    public string Uuid { get; init; } = string.Empty;
-    public string Kind { get; init; } = "unknown";
-  }
+  public required string Name { get; init; }
+  public required string Description { get; init; }
+  public required string Version { get; init; }
+  public required string Uuid { get; init; }
+  public required string Kind { get; init; }
 }
