@@ -1,6 +1,13 @@
 # MC Addon Ersteller
 
+![Version](https://img.shields.io/github/v/release/xoxttxox/MC-Addon-Ersteller)
+![Downloads](https://img.shields.io/github/downloads/xoxttxox/MC-Addon-Ersteller/total)
+![License](https://img.shields.io/github/license/xoxttxox/MC-Addon-Ersteller)
+![.NET](https://img.shields.io/badge/.NET-10-blue)
+
 **MC Addon Ersteller** ist ein kleiner, einfacher Windows-Launcher zum Erstellen von Minecraft Bedrock Addons im `.mcaddon` Format.
+
+![Preview](docs/preview.png)
 
 Du kannst ein **Behavior Pack (BP)**, ein **Resource Pack (RP)** oder beide zusammen auswählen. Der Launcher packt daraus automatisch eine saubere `.mcaddon` Datei mit Dateiname im Format `Name_v1_0_0.mcaddon`.
 
