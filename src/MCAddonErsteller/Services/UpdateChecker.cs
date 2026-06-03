@@ -7,7 +7,7 @@ namespace MCAddonErsteller.Services
 {
   public static class UpdateChecker
   {
-    private const string CurrentVersion = "1.0.0";
+    private const string CurrentVersion = "1.0.1";
     private const string LatestReleaseUrl = "https://api.github.com/repos/xoxttxox/MC-Addon-Ersteller/releases/latest";
     private const string ReleasesPageUrl = "https://github.com/xoxttxox/MC-Addon-Ersteller/releases/latest";
 
