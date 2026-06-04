@@ -185,11 +185,11 @@ public static class McAddonBuilder
     string[] ignoredSegments =
     [
       $"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}",
-    $"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}",
-    $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
-    $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
-    $"{Path.DirectorySeparatorChar}__MACOSX{Path.DirectorySeparatorChar}",
-  ];
+      $"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}",
+      $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
+      $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
+      $"{Path.DirectorySeparatorChar}__MACOSX{Path.DirectorySeparatorChar}",
+    ];
 
     if (ignoredSegments.Any(segment => normalized.Contains(segment, StringComparison.OrdinalIgnoreCase)))
       return true;

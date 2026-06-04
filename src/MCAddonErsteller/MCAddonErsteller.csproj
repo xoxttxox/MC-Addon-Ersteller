@@ -1,28 +1,58 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <ApplicationIcon>assets\app.ico</ApplicationIcon>
-    <AssemblyName>MCAddonErsteller</AssemblyName>
-    <RootNamespace>MCAddonErsteller</RootNamespace>
-    <Version>1.0.1</Version>
-    <FileVersion>1.0.1</FileVersion>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <Authors>MC Addon Ersteller</Authors>
-    <Product>MC Addon Ersteller</Product>
-    <Description>Ein kleiner WinForms Launcher zum Erstellen von Minecraft Bedrock .mcaddon Paketen aus BP/RP Ordnern oder ZIP-Dateien.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <None Update="assets\app.ico" />
-    <None Update="assets\app_icon.png" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+		<ApplicationIcon>assets\app.ico</ApplicationIcon>
+		<AssemblyName>MCAddonErsteller</AssemblyName>
+		<RootNamespace>MCAddonErsteller</RootNamespace>
+		<Version>1.0.1</Version>
+		<FileVersion>1.0.1</FileVersion>
+		<AssemblyVersion>1.0.1</AssemblyVersion>
+		<Authors>MC Addon Ersteller</Authors>
+		<Product>MC Addon Ersteller</Product>
+		<Description>Ein kleiner WinForms Launcher zum Erstellen von Minecraft Bedrock .mcaddon Paketen aus BP/RP Ordnern oder ZIP-Dateien.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryType>git</RepositoryType>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="assets\app.ico" />
+		<None Update="assets\app_icon.png" />
+		<None Update="assets\app_icon_trans.png" />
+		<None Update="assets\background.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="assets\fonts\*.ttf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="assets\icons\" />
+	</ItemGroup>
+
 </Project>

@@ -8,6 +8,9 @@ internal static class Program
   private static void Main()
   {
     ApplicationConfiguration.Initialize();
+
+    FontManager.Load();
+
     Application.Run(new MainForm());
   }
 }
