@@ -28,5 +28,5 @@ jobs:
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MC-Addon-Ersteller-win-x64
+          name: MCAddonCreator-win-x64
           path: release/MCAddonCreator.exe

@@ -2,10 +2,10 @@
 setlocal
 cd /d "%~dp0.."
 
-set "PROJECT=src\MCAddonErsteller\MCAddonErsteller.csproj"
+set "PROJECT=src\MCAddonCreator\MCAddonCreator.csproj"
 set "RELEASE_DIR=release"
 
-echo Publishing MC Addon Ersteller as single EXE for win-x64...
+echo Publishing MCAddonCreator as single EXE for win-x64...
 
 if exist "%RELEASE_DIR%" rmdir /s /q "%RELEASE_DIR%"
 mkdir "%RELEASE_DIR%"
@@ -23,12 +23,12 @@ dotnet publish "%PROJECT%" ^
 
 if %ERRORLEVEL% neq 0 (
   echo.
-  echo Publish fehlgeschlagen.
+  echo Publish failed.
   pause
   exit /b %ERRORLEVEL%
 )
 
 echo.
-echo Fertig. EXE liegt hier:
+echo Done. The EXE is located here:
 echo %CD%\%RELEASE_DIR%\MCAddonCreator.exe
 pause
