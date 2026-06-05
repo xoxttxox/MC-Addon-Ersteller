@@ -29,4 +29,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MC-Addon-Ersteller-win-x64
-          path: release/MC Addon Ersteller.exe
+          path: release/MCAddonCreator.exe

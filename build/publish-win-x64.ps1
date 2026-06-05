@@ -5,9 +5,9 @@ Set-Location $root
 $project = "src\MCAddonErsteller\MCAddonErsteller.csproj"
 $publishDir = "src\MCAddonErsteller\bin\Release\net10.0-windows\win-x64\publish"
 $releaseDir = "release"
-$finalExe = Join-Path $releaseDir "MC Addon Ersteller.exe"
+$finalExe = Join-Path $releaseDir "MCAddonCreator.exe"
 
-Write-Host "Publishing MC Addon Ersteller as single EXE for win-x64..."
+Write-Host "Publishing MC Addon Creator as single EXE for win-x64..."
 
 dotnet publish $project -c Release -r win-x64 --self-contained true `
   /p:PublishSingleFile=true `
@@ -20,7 +20,7 @@ if (!(Test-Path $releaseDir)) {
   New-Item -ItemType Directory -Path $releaseDir | Out-Null
 }
 
-Copy-Item -Force (Join-Path $publishDir "MCAddonErsteller.exe") $finalExe
+Copy-Item -Force (Join-Path $publishDir "MCAddonCreator.exe") $finalExe
 
 Write-Host ""
 Write-Host "Fertig. EXE liegt hier:"
