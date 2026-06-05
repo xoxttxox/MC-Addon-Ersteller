@@ -1,150 +1,154 @@
-<div align="center">
+# MC Addon Creator
 
-# MC Addon Ersteller
+<div align="center">
 
 [![Version](https://img.shields.io/github/v/release/xoxttxox/MC-Addon-Ersteller)](https://github.com/xoxttxox/MC-Addon-Ersteller/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/xoxttxox/MC-Addon-Ersteller/total)](https://github.com/xoxttxox/MC-Addon-Ersteller/releases)
 [![License](https://img.shields.io/github/license/xoxttxox/MC-Addon-Ersteller)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10-blue)](https://dotnet.microsoft.com/)
 
-Ein moderner Windows-Launcher zum Erstellen von Minecraft Bedrock Addons (`.mcaddon`) aus Behavior Packs (BP) und Resource Packs (RP).
+A modern Windows application for creating Minecraft Bedrock Edition Addons (`.mcaddon`) from Behavior Packs (BP) and Resource Packs (RP).
 
 </div>
 
-**MC Addon Ersteller** ist ein kleiner, einfacher Windows-Launcher zum Erstellen von Minecraft Bedrock Addons im `.mcaddon` Format.
+## Overview
 
-![Preview](docs/preview.png)
+**MC Addon Creator** is a lightweight Windows application that allows you to quickly build Minecraft Bedrock Edition Addons in the `.mcaddon` format.
 
-Du kannst ein **Behavior Pack (BP)**, ein **Resource Pack (RP)** oder beide zusammen auswählen. Der Launcher packt daraus automatisch eine saubere `.mcaddon` Datei mit Dateiname im Format `Name_v1_0_0.mcaddon`.
+The application supports Behavior Packs, Resource Packs, or a combination of both and automatically generates a clean `.mcaddon` package with a versioned file name.
 
-## Funktionen
+Example:
 
-- Erstellt `.mcaddon` Dateien aus Behavior Pack und/oder Resource Pack
-- Unterstützt **nur BP**, **nur RP** oder **BP + RP**
-- Unterstützt Ordner, `.zip`, `.mcpack` und `.mcaddon` als Quelle
-- Liest `manifest.json` automatisch aus
-- Erkennt Packs auch, wenn sie in einem extra Hauptordner liegen
-- Automatischer Dateiname mit Name und Version
-- Build Log mit einzelnen Schritten
-- Fortschrittsanzeige im Fenster und in der Statusleiste
-- Kleine feste Launcher-Größe
-- Standard Windows-Fensterrahmen
-- Keine Theme-Auswahl, kein Theme-System
-- Dunkle Statusleiste
-- Die Originaldateien werden nicht verändert
+```txt
+MyAddon_v1_0_0.mcaddon
+```
 
-## Screenshots
+## Features
 
-Die Vorschau oben zeigt den geplanten Look und die GitHub-Dokumentation. Das Programm selbst ist bewusst klein und einfach gehalten.
+* Create `.mcaddon` files from Behavior Packs and Resource Packs
+* Supports:
 
-## Unterstützte Eingaben
+  * Behavior Pack only
+  * Resource Pack only
+  * Behavior Pack + Resource Pack
+* Supports folders, `.zip`, `.mcpack`, and `.mcaddon` files as input
+* Automatically reads `manifest.json`
+* Detects packs even when they are stored inside an additional root directory
+* Automatic output filename generation using pack name and version
+* Detailed build log
+* Progress display in the main window and status bar
+* Fixed and compact application size
+* Native Windows title bar and controls
+* Dark status bar support
+* Original source files are never modified
 
-| Quelle | Unterstützt |
-|---|---:|
-| Behavior Pack Ordner | Ja |
-| Resource Pack Ordner | Ja |
-| `.zip` | Ja |
-| `.mcpack` | Ja |
-| `.mcaddon` | Ja |
+## Supported Inputs
 
-## Ausgabe
+| Source               | Supported |
+| -------------------- | --------- |
+| Behavior Pack Folder | Yes       |
+| Resource Pack Folder | Yes       |
+| .zip Archive         | Yes       |
+| .mcpack              | Yes       |
+| .mcaddon             | Yes       |
 
-Der Launcher erstellt automatisch eine Datei nach diesem Schema:
+## Output
+
+Generated output format:
 
 ```txt
 Name_v1_0_0.mcaddon
 ```
 
-Beispiele:
+Examples:
 
 ```txt
-MeinAddon_v1_0_0.mcaddon
+MyAddon_v1_0_0.mcaddon
 CityTextures_v2_1_0.mcaddon
 ```
 
-## Voraussetzungen für Entwickler
+## Development Requirements
 
-Zum Bearbeiten oder Bauen aus dem Source brauchst du:
+To build or modify the project, you will need:
 
-- Windows 10 oder Windows 11
-- Visual Studio mit **.NET Desktop Development**
-- .NET 10 SDK
+* Windows 10 or Windows 11
+* Visual Studio 2022
+* .NET Desktop Development workload
+* .NET 10 SDK
 
-Projekt-Target:
+Target Framework:
 
 ```txt
 net10.0-windows
 ```
 
-## Projekt öffnen
+## Opening the Project
 
-In Visual Studio:
+Open the solution:
 
 ```txt
 MCAddonErsteller.sln
 ```
 
-Oder direkt das Projekt:
+Or directly open the project:
 
 ```txt
 src\MCAddonErsteller\MCAddonErsteller.csproj
 ```
 
-## Normales Build
+## Standard Build
 
 ```bat
 build\build-release.bat
 ```
 
-Oder direkt:
+Or:
 
 ```bat
 dotnet build src\MCAddonErsteller\MCAddonErsteller.csproj -c Release
 ```
 
-## Release Build als einzelne EXE
+## Publish Single Executable
 
-Empfohlen für Veröffentlichung auf GitHub Releases:
+Recommended for GitHub Releases:
 
 ```bat
 build\publish-win-x64.bat
 ```
 
-Danach liegt die fertige Datei hier:
+Output:
 
 ```txt
 release\MCAddonErsteller.exe
 ```
 
-Die EXE wird als **self-contained single file** gebaut. Dadurch braucht der Nutzer normalerweise keine extra .NET Runtime zu installieren.
+The executable is published as a self-contained single-file application, meaning users typically do not need to install the .NET Runtime separately.
 
 ## PowerShell Build
-
-Alternativ:
 
 ```powershell
 .\build\publish-win-x64.ps1
 ```
 
-## GitHub Release veröffentlichen
+## GitHub Release
 
-1. Projekt auf GitHub hochladen
-2. Lokal ausführen:
+1. Push the project to GitHub.
+2. Build the release:
 
 ```bat
 build\publish-win-x64.bat
 ```
 
-3. Auf GitHub unter **Releases** eine neue Version erstellen
-4. Diese Datei hochladen:
+3. Create a new GitHub Release.
+4. Upload:
 
 ```txt
-release\MC Addon Ersteller.exe
+release\MCAddonErsteller.exe
 ```
 
-Optional kannst du zusätzlich den Source als ZIP hochladen.
+Optionally, upload the source code archive as well.
 
-## Projektstruktur
+## Project Structure
 
 ```txt
 MC-Addon-Ersteller/
@@ -152,36 +156,50 @@ MC-Addon-Ersteller/
 │  └─ workflows/
 │     └─ build.yml
 ├─ assets/
+│  ├─ fonts/
+│  ├─ icons/
 │  ├─ app.ico
-│  └─ app_icon.png
+│  ├─ app_icon.png
+│  ├─ app_icon_trans.png
+│  └─ background.png
 ├─ build/
 │  ├─ build-release.bat
 │  ├─ publish-win-x64.bat
 │  └─ publish-win-x64.ps1
 ├─ docs/
 │  └─ preview.png
+├─ release/
 ├─ src/
 │  └─ MCAddonErsteller/
+│     ├─ assets/
+│     ├─ Controls/
 │     ├─ Models/
+│     ├─ Properties/
+│     ├─ Resources/
 │     ├─ Services/
+│     ├─ FontManager.cs
 │     ├─ MainForm.cs
+│     ├─ MainForm.resx
 │     ├─ Program.cs
 │     ├─ app.manifest
 │     └─ MCAddonErsteller.csproj
+├─ .gitattributes
 ├─ .gitignore
 ├─ LICENSE
 ├─ MCAddonErsteller.sln
 └─ README.md
 ```
 
-## Hinweise
+## Notes
 
-- `.mcaddon` ist technisch eine ZIP-Datei mit anderer Endung.
-- BP/RP müssen eine gültige `manifest.json` enthalten.
-- Wenn du nur ein BP auswählst, wird auch nur dieses BP in die `.mcaddon` gepackt.
-- Wenn du nur ein RP auswählst, wird auch nur dieses RP in die `.mcaddon` gepackt.
-- Wenn du BP und RP auswählst, werden beide gemeinsam in eine `.mcaddon` gepackt.
+* `.mcaddon` files are technically ZIP archives with a different file extension.
+* Behavior Packs and Resource Packs must contain a valid `manifest.json`.
+* If only a Behavior Pack is selected, only that pack will be included.
+* If only a Resource Pack is selected, only that pack will be included.
+* If both packs are selected, both will be packaged together.
 
-## Lizenz
+## License
 
-Dieses Projekt steht unter der MIT-Lizenz. Siehe [LICENSE](LICENSE).
+This project is licensed under the MIT License.
+
+See the [LICENSE](LICENSE) file for more information.
