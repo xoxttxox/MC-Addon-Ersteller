@@ -13,7 +13,7 @@ Ein moderner Windows-Launcher zum Erstellen von Minecraft Bedrock Addons (`.mcad
 
 **MC Addon Ersteller** ist ein kleiner, einfacher Windows-Launcher zum Erstellen von Minecraft Bedrock Addons im `.mcaddon` Format.
 
-![Preview](docs/preview_new.png)
+![Preview](docs/preview.png)
 
 Du kannst ein **Behavior Pack (BP)**, ein **Resource Pack (RP)** oder beide zusammen auswählen. Der Launcher packt daraus automatisch eine saubere `.mcaddon` Datei mit Dateiname im Format `Name_v1_0_0.mcaddon`.
 
