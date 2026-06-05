@@ -15,8 +15,8 @@
 				<Version>1.0.3</Version>
 				<FileVersion>1.0.3</FileVersion>
 				<AssemblyVersion>1.0.3</AssemblyVersion>
-		<Authors>MC Addon Creator</Authors>
-		<Product>MC Addon Creator</Product>
+		<Authors>MCAddonCreator</Authors>
+		<Product>MCAddonCreator</Product>
 		<Description>A modern Windows application for creating Minecraft Bedrock Edition Addons (.mcaddon) from Behavior Packs and Resource Packs.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryType>git</RepositoryType>
